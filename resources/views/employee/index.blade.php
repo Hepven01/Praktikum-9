@@ -25,34 +25,56 @@ btn-primary">Create Employee</a>
         </div>
         <hr>
         <div class="table-responsive border p-3 rounded-3">
-            <table class="table table-bordered table-hover table-striped
-mb-0 bg-white">
-                <thead>
-                    <tr>
-                        <th>First Name</th>
-                        <th>Last Name</th>
-                        <th>Email</th>
-                        <th>Age</th>
-                        <th>Position</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($employees as $employee)
-                    <tr>
-                        <td>{{ $employee->firstname }}</td>
-                        <td>{{ $employee->lastname }}</td>
-                        <td>{{ $employee->email }}</td>
-                        <td>{{ $employee->age }}</td>
-                        <td>{{ $employee->position->name }}</td>
-                        <td>@include('employee.actions')</td>
-                    </tr>
-                    @endforeach
-                </tbody>
+        <table class="table table-bordered table-hover table-striped mb-0 bg-white datatable" id="employeeTable">
             </table>
         </div>
     </div>
     @endsection
+    @push('scripts')
+    <script type="module">
+       $(document).ready(function() {
+           $("#employeeTable").DataTable({
+               serverSide: true,
+               processing: true,
+               ajax: "/getEmployees",
+               columns: [
+                   { data: "id", name: "id", visible: false },
+                   { data: "DT_RowIndex", name: "DT_RowIndex", orderable: false, searchable: false },
+                   { data: "firstname", name: "firstname" },
+                   { data: "lastname", name: "lastname" },
+                   { data: "email", name: "email" },
+                   { data: "age", name: "age" },
+                   { data: "position.name", name: "position.name" },
+                   { data: "actions", name: "actions", orderable: false, searchable: false },
+               ],
+               order: [[0, "desc"]],
+               lengthMenu: [
+                   [10, 25, 50, 100, -1],
+                   [10, 25, 50, 100, "All"],
+               ],
+           });
+           $(".datatable").on("click", ".btn-delete", function (e) {
+               e.preventDefault();
+
+               var form = $(this).closest("form");
+               var name = $(this).data("name");
+
+               Swal.fire({
+                   title: "Are you sure want to delete\n" + name + "?",
+                   text: "You won't be able to revert this!",
+                   icon: "warning",
+                   showCancelButton: true,
+                   confirmButtonClass: "bg-primary",
+                   confirmButtonText: "Yes, delete it!",
+               }).then((result) => {
+                   if (result.isConfirmed) {
+                       form.submit();
+                   }
+               });
+           });
+       });
+   </script>
+@endpush
 </body>
 
 </html>
